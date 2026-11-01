@@ -104,3 +104,33 @@ is clean. Native Windows/macOS first-run checks still require those machines.
 
 Docs updated: GAME_IDEAS.md records all five MVPs and future extensions;
 README.md documents controls, direct terminal launches and expanded tests.
+
+Maze key detour and jigsaw picture-box reference
+----------------------------------------------
+Checkpoint before these changes: c566154.
+PASS full tests/run.sh after both changes. Maze generation now requires a
+key at least two steps off the exit route, reachable with the door locked,
+with Manhattan separation >=4/5 and walking distance >=8/10 from the door
+on medium/hard. Independent BFS assertions cover these properties across
+80 harder mazes, including full key collection and exit; 120 total solves.
+Jigsaw tests verify preview visibility only on harder levels and matching
+current texture across all three scenes, alongside existing mouse/keyboard
+placement, rotation, reset and completion tests (3,256 checks).
+Visually reviewed both harder reference layouts and changed scene at900x600;
+reference stays outside the board/tray and no pieces overlap the preview.
+Reviewed a hard maze showing a separated key/door and side-branch retrieval.
+PASS rebuilt all three desktop exports (exit 0). Targeted exported Linux
+smoke exercises both harder jigsaw previews, New picture updating the
+preview, hard maze/hint controls, Escape and Quit; no runtime errors.
+
+Maze key inventory correction
+-----------------------------
+PASS full tests/run.sh: key pickup leaves door closed; inventory retains
+key throughout approach; entering door consumes key and opens it; returning
+through door works without a key; revisiting pickup cannot respawn key;
+hints still lead to exit after unlocking; restart resets door and inventory.
+These transitions are exercised across all 80 harder seeded maze solves.
+Rendered screenshots manually inspected: maze-carrying-key.png shows closed
+door and Carrying key status; maze-door-opened.png shows Door open and the
+unlock message. No graphical runtime errors.
+All three exports rebuilt successfully after the inventory correction.

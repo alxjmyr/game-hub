@@ -45,6 +45,8 @@ func run() -> void:
 		for seed_value in range(10):
 			game.picture_index = seed_value % 3
 			game.new_puzzle(seed_value)
+			check(game.reference_panel.visible == (difficulty > 0), "reference shown only on harder levels")
+			check(game.reference_image.texture == game.texture, "reference matches current puzzle picture")
 			check(game.pieces.size() == [9, 16, 25][difficulty], "difficulty piece count")
 			var initial_positions: Array = []
 			for piece in game.pieces:

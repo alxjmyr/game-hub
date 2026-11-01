@@ -25,6 +25,8 @@ var picture_index := 0
 var texture: ImageTexture
 var canvas: PuzzleCanvas
 var area: Control
+var reference_panel: VBoxContainer
+var reference_image: TextureRect
 var status_label: Label
 var instructions: Label
 var difficulty_buttons: Array[Button] = []
@@ -68,10 +70,27 @@ func _ready() -> void:
 		difficulty_buttons.append(button)
 	instructions = make_label("Drag a piece onto its place in the picture. Correct pieces stay put.", 18)
 	column.add_child(instructions)
+	var play_row := HBoxContainer.new()
+	play_row.size_flags_vertical = SIZE_EXPAND_FILL
+	play_row.add_theme_constant_override("separation", 16)
+	column.add_child(play_row)
 	area = Control.new()
+	area.size_flags_horizontal = SIZE_EXPAND_FILL
 	area.size_flags_vertical = SIZE_EXPAND_FILL
 	area.custom_minimum_size.y = 300
-	column.add_child(area)
+	play_row.add_child(area)
+	reference_panel = VBoxContainer.new()
+	reference_panel.custom_minimum_size.x = 180
+	reference_panel.size_flags_vertical = SIZE_SHRINK_BEGIN
+	play_row.add_child(reference_panel)
+	reference_panel.add_child(make_label("Picture box", 20))
+	reference_image = TextureRect.new()
+	reference_image.custom_minimum_size = Vector2(180, 180)
+	reference_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	reference_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	reference_image.mouse_filter = MOUSE_FILTER_IGNORE
+	reference_image.accessibility_name = "Reference picture for the completed puzzle"
+	reference_panel.add_child(reference_image)
 	canvas = PuzzleCanvas.new()
 	canvas.game = self
 	canvas.size = Vector2(1040, 525)
@@ -139,6 +158,8 @@ func new_puzzle(seed_value: int = -1) -> void:
 	cursor = Vector2i.ZERO
 	selected = 0
 	texture = make_picture(picture_index)
+	reference_image.texture = texture
+	reference_panel.visible = difficulty > 0
 	var order: Array[int] = []
 	for i in grid_size * grid_size: order.append(i)
 	for i in range(order.size() - 1, 0, -1):

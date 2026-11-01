@@ -71,7 +71,7 @@ func run() -> void:
 		for seed_value in range(40):
 			game.new_maze(seed_value)
 			fingerprints[hash(game.passages)] = true
-			check(not game.won and game.steps == 0 and not game.has_key, "new maze resets state")
+			check(not game.won and game.steps == 0 and not game.has_key and not game.door_open, "new maze resets state")
 			var corridor_count := 0
 			for y in range(game.dimensions.y):
 				for x in range(game.dimensions.x):
@@ -90,10 +90,29 @@ func run() -> void:
 				check(oracle(Vector2i.ZERO, game.exit_cell, true).is_empty(), "door blocks only exit route")
 				var key_route := oracle(Vector2i.ZERO, game.key_cell, true)
 				check(not key_route.is_empty(), "key reachable with door locked")
+				var exit_route := oracle(Vector2i.ZERO, game.exit_cell, false)
+				check(not game.key_cell in exit_route, "key requires a detour off the exit route")
+				check(not key_route[key_route.size() - 2] in exit_route, "key is at least two steps into its side branch")
+				var delta: Vector2i = game.key_cell - game.door_cell
+				var minimum := 4 if level == 1 else 5
+				check(absi(delta.x) + absi(delta.y) >= minimum, "key visually separated from door")
+				check(oracle(game.key_cell, game.door_cell, false).size() - 1 >= minimum * 2, "retrieval requires a substantial walk back to door")
 				game.show_hint()
 				check(game.hint_cells == key_route.slice(1, mini(key_route.size(), 5)), "hint leads toward reachable key")
 				walk(key_route)
-				check(game.has_key and game.hint_cells.is_empty(), "key acquired and movement clears hint")
+				check(game.has_key and not game.door_open and game.hint_cells.is_empty(), "pickup carries key without opening door")
+				check("Carrying key" in game.counter_label.text, "inventory shows carried key")
+				var door_route := oracle(game.player_cell, game.door_cell, false)
+				walk(door_route.slice(0, door_route.size() - 1))
+				check(game.has_key and not game.door_open, "key held and door closed for entire approach")
+				game.move_player(game.door_cell - game.player_cell)
+				check(game.door_open and not game.has_key, "entering door uses key and opens it")
+				check("Door open" in game.counter_label.text, "inventory updates after unlocking")
+				# An opened door stays traversable; a consumed key never respawns.
+				walk(oracle(game.player_cell, game.key_cell, false))
+				check(game.door_open and not game.has_key, "revisiting key cannot collect it again")
+				game.show_hint()
+				check(game.hint_cells == oracle(game.player_cell, game.exit_cell, false).slice(1, 5), "after unlocking hints still lead to exit")
 			var route := oracle(game.player_cell, game.exit_cell, false)
 			game.show_hint()
 			check(game.hint_cells == route.slice(1, mini(route.size(), 5)), "hint leads toward exit")
@@ -109,7 +128,7 @@ func run() -> void:
 			var key: Vector2i = game.key_cell
 			game.restart()
 			check(game.passages == layout and game.door_cell == door and game.key_cell == key, "restart preserves puzzle")
-			check(not game.won and not game.has_key and game.steps == 0 and game.hints_used == 0 and game.player_cell == Vector2i.ZERO, "restart resets play")
+			check(not game.won and not game.has_key and not game.door_open and game.steps == 0 and game.hints_used == 0 and game.player_cell == Vector2i.ZERO, "restart resets play")
 			game.new_maze(seed_value)
 			check(game.passages == layout and game.key_cell == key and game.door_cell == door, "seed reproduces puzzle")
 	check(fingerprints.size() == 120, "all 120 seeded mazes distinct")
@@ -124,7 +143,7 @@ func run() -> void:
 	check(game.player_cell == previous and game.steps == 0 and not game.has_key, "locked door denies entry")
 	game.has_key = true
 	game.move_player(game.door_cell - previous)
-	check(game.player_cell == game.door_cell and game.steps == 1, "key permits entry")
+	check(game.player_cell == game.door_cell and game.steps == 1 and game.door_open and not game.has_key, "key opens door on entry and is consumed")
 	game.restart()
 	game.move_player(Vector2i.UP)
 	game.move_player(Vector2i(-1, -1))

@@ -16,6 +16,7 @@ var exit_cell := Vector2i.ZERO
 var key_cell := Vector2i(-1, -1)
 var door_cell := Vector2i(-1, -1)
 var has_key := false
+var door_open := false
 var won := false
 var steps := 0
 var hints_used := 0
@@ -132,6 +133,16 @@ func new_maze(seed_value: int = -1) -> void:
 	rng.seed = puzzle_seed
 	dimensions = DIMENSIONS[difficulty]
 	exit_cell = dimensions - Vector2i.ONE
+	# Reject layouts without a genuine key detour; continue the same RNG stream
+	# so a saved seed still recreates exactly the same puzzle.
+	while true:
+		_generate_passages(rng)
+		door_cell = Vector2i(-1, -1)
+		key_cell = Vector2i(-1, -1)
+		if difficulty == 0 or _place_key_and_door(rng): break
+	restart()
+
+func _generate_passages(rng: RandomNumberGenerator) -> void:
 	passages.clear()
 	passages.resize(dimensions.x * dimensions.y)
 	passages.fill(0)
@@ -152,28 +163,35 @@ func new_maze(seed_value: int = -1) -> void:
 		passages[index_of(neighbor)] |= 1 << ((direction + 2) % 4)
 		explored[neighbor] = true
 		stack.append(neighbor)
-	door_cell = Vector2i(-1, -1)
-	key_cell = Vector2i(-1, -1)
-	if difficulty > 0:
-		var solution := find_path(Vector2i.ZERO, exit_cell, true)
-		door_cell = solution[clampi(int(solution.size() * 0.65), 2, solution.size() - 2)]
-		# BFS with the door blocked finds a distant key on the start side.
-		var reachable := {Vector2i.ZERO: true}
-		var queue: Array[Vector2i] = [Vector2i.ZERO]
-		var head := 0
-		while head < queue.size():
-			var cell := queue[head]
-			head += 1
-			for neighbor in neighbors(cell, false):
-				if not reachable.has(neighbor):
-					reachable[neighbor] = true
-					queue.append(neighbor)
-		key_cell = queue.back()
-	restart()
+
+func _place_key_and_door(rng: RandomNumberGenerator) -> bool:
+	var solution := find_path(Vector2i.ZERO, exit_cell, true)
+	var separation := 4 if difficulty == 1 else 5
+	# Try doors in the latter half of the route, leaving a final stretch to exit.
+	for door_index in range(int(solution.size() * 0.8), int(solution.size() * 0.5), -1):
+		door_cell = solution[mini(door_index, solution.size() - 2)]
+		var candidates: Array[Vector2i] = []
+		for y in dimensions.y:
+			for x in dimensions.x:
+				var cell := Vector2i(x, y)
+				if cell in solution: continue
+				var delta := cell - door_cell
+				if absi(delta.x) + absi(delta.y) < separation: continue
+				var route := find_path(Vector2i.ZERO, cell, false)
+				if route.is_empty(): continue
+				# At least two steps off the exit route: a meaningful retrieve-and-return.
+				if route.size() < 3 or route[route.size() - 2] in solution: continue
+				if find_path(cell, door_cell, true).size() - 1 < separation * 2: continue
+				candidates.append(cell)
+		if not candidates.is_empty():
+			key_cell = candidates[rng.randi_range(0, candidates.size() - 1)]
+			return true
+	return false
 
 func restart() -> void:
 	player_cell = Vector2i.ZERO
 	has_key = false
+	door_open = false
 	won = false
 	steps = 0
 	hints_used = 0
@@ -220,16 +238,20 @@ func move_player(direction: Vector2i) -> void:
 	if not destination in neighbors(player_cell, true):
 		status_label.text = "A wall here. Try another way!"
 		return
-	if destination == door_cell and not has_key:
+	if destination == door_cell and not door_open and not has_key:
 		status_label.text = "This door needs the golden key. Look for the key first."
 		return
 	player_cell = destination
 	steps += 1
 	hint_cells.clear()
 	if not destination in visited: visited.append(destination)
-	if destination == key_cell and not has_key:
+	if destination == key_cell and not has_key and not door_open:
 		has_key = true
-		status_label.text = "Key found! The striped door is open. Head for the flag."
+		status_label.text = "Key collected! Carry it to the striped door to open it."
+	elif destination == door_cell and not door_open:
+		door_open = true
+		has_key = false
+		status_label.text = "You used the key to open the door! Head for the flag."
 	else:
 		status_label.text = "Keep exploring. Your little dots show where you've been."
 	if player_cell == exit_cell:
@@ -240,17 +262,17 @@ func move_player(direction: Vector2i) -> void:
 
 func show_hint() -> void:
 	if won: return
-	var target := key_cell if difficulty > 0 and not has_key else exit_cell
-	var route := find_path(player_cell, target, has_key)
+	var target := key_cell if difficulty > 0 and not has_key and not door_open else exit_cell
+	var route := find_path(player_cell, target, has_key or door_open)
 	hint_cells.clear()
 	for i in range(1, mini(route.size(), 5)):
 		hint_cells.append(route[i])
 	hints_used += 1
-	status_label.text = "Follow the golden dots toward %s. The hint fades after your next step." % ("the key" if difficulty > 0 and not has_key else "the flag")
+	status_label.text = "Follow the golden dots toward %s. The hint fades after your next step." % ("the key" if difficulty > 0 and not has_key and not door_open else "the flag")
 	board.queue_redraw()
 
 func _refresh() -> void:
-	counter_label.text = "Steps  %d%s" % [steps, "  ·  Key ✓" if has_key else ""]
+	counter_label.text = "Steps  %d%s" % [steps, "  ·  Carrying key" if has_key else ("  ·  Door open" if door_open else "")]
 	for button in movement_buttons: button.disabled = won
 	hint_button.disabled = won
 	board.queue_redraw()
@@ -295,10 +317,11 @@ class MazeBoard extends Control:
 		draw_colored_polygon(PackedVector2Array([finish + Vector2(-0.18, -0.3) * cell_size, finish + Vector2(0.3, -0.12) * cell_size, finish + Vector2(-0.18, 0.05) * cell_size]), TEAL)
 		if game.difficulty > 0:
 			var door: Vector2 = origin + (Vector2(game.door_cell) + Vector2(0.5, 0.5)) * cell_size
-			if not game.has_key:
+			if not game.door_open:
 				draw_rect(Rect2(door - Vector2.ONE * cell_size * 0.32, Vector2.ONE * cell_size * 0.64), Color("b97937"))
 				for stripe in range(3):
 					draw_line(door + Vector2(-0.23 + stripe * 0.23, -0.25) * cell_size, door + Vector2(-0.23 + stripe * 0.23, 0.25) * cell_size, Color("fff1c6"), 2, true)
+			if not game.has_key and not game.door_open:
 				var key: Vector2 = origin + (Vector2(game.key_cell) + Vector2(0.5, 0.5)) * cell_size
 				draw_arc(key + Vector2(-0.13, -0.12) * cell_size, cell_size * 0.14, 0, TAU, 24, Color("c28b14"), 3, true)
 				draw_line(key, key + Vector2(0.27, 0.27) * cell_size, Color("c28b14"), 3, true)
