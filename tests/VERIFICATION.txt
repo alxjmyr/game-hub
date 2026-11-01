@@ -57,3 +57,50 @@ delay on cards before flipping and leaving the game.
 PASS rebuilt Linux release native smoke with hover delays, flips, shelf
 navigation, physics difficulty changes and normal Quit: no runtime errors.
 All three desktop exports rebuilt successfully with this fix.
+
+Remaining game MVPs — 2026-11-01
+--------------------------------
+PASS ./tests/run.sh after final implementation changes (exit 0).
+- Memory: 124 checks; existing gameplay regression suite remains green.
+- Physics: 583 assertions / 72 simulated solved layouts remain green.
+- Jigsaw: 3,196 checks, 31 solved puzzles; all 9/16/25-piece levels and
+  three pictures, wrong squares/rotations, snap tolerance boundaries,
+  hints, bounds, resets during drag, actual mouse dragging, and a complete
+  hard puzzle using keyboard input. Square-cut pieces are the MVP scope.
+- Maze: 56,002 checks, 120 solved generated mazes; independent breadth-first
+  oracle verifies connectivity, reciprocal walls, key reachability and
+  locked-door gating. Movement, hint routes, restarts, difficulty changes,
+  arrow/WASD input and single completion emissions verified.
+- Letter Hunt: 1,379 assertions and three full keyboard rounds; letter,
+  alphanumeric and word levels, mistakes, case, echo/modifier handling,
+  partial-word Backspace, hint toggles, reset and single victory emission.
+- Hub: 36 checks; all five shelf buttons, real keyboard/mouse navigation,
+  full wins for new games, result payloads, disk reload of completion counts,
+  Escape during unfinished games, and no extra wins on navigation.
+- No runtime errors or leaked-object warnings in these suites.
+
+PASS rendered visual inspection of each new game and difficulty, victory
+screens, and 900x600 layouts through the actual hub theme. All five shelf
+cards fit the standard viewport. Pictures are generated locally (landscape,
+space, underwater); no network assets or dependencies are needed to play.
+
+PASS final exported Linux app via tests/native_smoke.py (exit 0):
+- Actual X11 input opens all five games through shelf buttons.
+- Existing Memory hover and physics difficulty regression checks preserved.
+- Jigsaw selection, hard difficulty, rotation, drag and placement hint.
+- Maze difficulty buttons, arrow/WASD movement, hints, reset and new maze.
+- Letter difficulties, accepted/incorrect keys, Backspace, hint toggle,
+  new round; Escape navigation and normal Quit.
+- Manually inspected artifacts/native-{shelf,jigsaw-hard,maze-hint,
+  letter-words,all-games-returned-shelf}.png; no clipping/runtime errors.
+- Log contains only the virtual display's unsupported VSync warning.
+
+PASS terminal launcher with -- --jigsaw, -- --maze and -- --letter-hunt
+using the exported Linux app in headless launch checks.
+PASS scripts/export.sh all (exit 0), Windows PE and Linux ELF identification,
+macOS ZIP integrity. Editor export logging contains sandbox-blocked debug
+TCP listener errors; exports finish successfully and the Linux runtime log
+is clean. Native Windows/macOS first-run checks still require those machines.
+
+Docs updated: GAME_IDEAS.md records all five MVPs and future extensions;
+README.md documents controls, direct terminal launches and expanded tests.

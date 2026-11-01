@@ -64,6 +64,14 @@ A local games hub for kids roughly **8–12 years old**. Games should be fun and
 - How bouncy or grippy should surfaces be to make outcomes understandable and repeatable?
 - Should early puzzles be handcrafted before unlocking random challenges?
 
-## Starting point
+## Current playable library
 
-Initial proposal: build the hub and memory match first, then expand the library. Build order and visual theme are still open.
+All five proposed archetypes now have an initial local version:
+
+- **Memory Match:** 6, 10, or 15 pairs, keyboard/mouse selection, local best scores.
+- **Ball & Bucket:** three difficulty levels, draggable/rotatable ramps, forgiving retries.
+- **Jigsaw Puzzles:** square-cut 9/16/25-piece pictures, three distinct scenes, rotation on the hardest level, optional placement hints and keyboard-only play.
+- **Maze Explorer:** generated 7×5, 11×7, or 15×9 mazes; harder levels add a key and locked door. Arrow keys/WASD, on-screen movement, optional route hints.
+- **Letter Hunt:** letters, letters plus numbers, and words; constellation progress and optional keyboard hints, without time pressure.
+
+Potential future work: interlocking jigsaw outlines, more pictures and word lists, additional physics puzzle families, and optional challenge goals. These are extensions beyond the initial versions.

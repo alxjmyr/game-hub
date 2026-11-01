@@ -68,7 +68,7 @@ func run() -> void:
 	await create_app()
 	check(is_instance_valid(app.shelf) and app.current_game == null, "launch opens shelf")
 	var play := find_buttons(app.shelf, "Play  →")
-	check(play.size() == 2, "shelf exposes both game launch buttons")
+	check(play.size() == 5, "shelf exposes all five game launch buttons")
 	await click(app.sound_button)
 	check(not app.sound_enabled and app.sound_button.text == "Sound: off", "mouse toggles sound off")
 	await activate(play[0])
@@ -136,6 +136,54 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	check(not is_instance_valid(physics_game) and is_instance_valid(app.shelf), "Escape returns safely during physics simulation")
+	# Launch every new game through the shelf, finish its actual mechanics, then
+	# reload the hub to verify the completion signal reaches persistent storage.
+	var extra_ids := ["jigsaw", "maze", "letter_hunt"]
+	for index in extra_ids.size():
+		play = find_buttons(app.shelf, "Play  →")
+		await activate(play[index + 2])
+		var game: Control = app.current_game
+		var id: String = extra_ids[index]
+		check(is_instance_valid(game) and app.last_game == id, "keyboard shelf launches " + id)
+		if id == "jigsaw":
+			for piece in game.pieces.size():
+				game.attempt_drop(piece, game.target_position(piece))
+		elif id == "maze":
+			game.change_difficulty(1)
+			for destination in game.find_path(game.player_cell, game.key_cell, false).slice(1):
+				game.move_player(destination - game.player_cell)
+			for destination in game.find_path(game.player_cell, game.exit_cell, true).slice(1):
+				game.move_player(destination - game.player_cell)
+		else:
+			game.change_difficulty(2)
+			while not game.won:
+				var key := InputEventKey.new()
+				key.unicode = game.expected_character().unicode_at(0)
+				key.keycode = key.unicode
+				key.pressed = true
+				Input.parse_input_event(key)
+				await process_frame
+				key.pressed = false
+				Input.parse_input_event(key)
+		check(game.won and app.progress.get_value(id, "wins", 0) == 1, "full victory recorded for " + id)
+		check(not app.progress.get_value(id, "last_result", {}).is_empty(), "result payload saved for " + id)
+		await click(game.back_button)
+		check(not is_instance_valid(game) and is_instance_valid(app.shelf), "visible back button frees " + id)
+		# Escape during a fresh unfinished game must neither award a win nor leak input.
+		app.open_game(id)
+		await process_frame
+		escape = InputEventKey.new()
+		escape.keycode = KEY_ESCAPE
+		escape.pressed = true
+		Input.parse_input_event(escape)
+		await process_frame
+		await process_frame
+		check(app.current_game == null and app.progress.get_value(id, "wins", 0) == 1, "Escape safely exits unfinished " + id)
+	app.queue_free()
+	await process_frame
+	await create_app()
+	for id in extra_ids:
+		check(app.progress.get_value(id, "wins", 0) == 1, "completion survives disk reload for " + id)
 	app.queue_free()
 	await process_frame
 	# Allow SceneTree timers and audio mixing references to settle before exit.

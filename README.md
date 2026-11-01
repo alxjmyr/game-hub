@@ -1,6 +1,6 @@
 # Game Hub
 
-An offline family arcade for ages 8–12, built with **Godot 4.5.2 and GDScript**. Open the shelf, choose Memory Match or Ball & Bucket, and play. No accounts, ads, online chat, or network connection are needed. All artwork is drawn locally by the game.
+An offline family arcade for ages 8–12, built with **Godot 4.5.2 and GDScript**. Open the shelf, choose from five games, and play. No accounts, ads, online chat, or network connection are needed. All artwork is drawn locally by the game.
 
 ## Play on this Ubuntu machine
 
@@ -26,6 +26,10 @@ Optional: run `./scripts/install-command.sh` to install a small launcher in `~/.
 - **Memory Match:** reveal two cards to find matching pairs. Choose 6, 10, or 15 pairs. A move is one pair of flips; improve your own best score without a timer. Use the mouse or Tab and Enter/Space to choose cards and buttons.
 - **Ball & Bucket:** arrange a limited set of blocks to guide a falling ball into a bucket. Drag blocks, rotate the selected piece with Q/E or the on-screen buttons, and press Space or Drop to test your plan. Hold Shift with Q/E for finer rotation; arrow keys move a selected piece. Retry preserves your arrangement. Experiment freely; there is no penalty for trying again.
 
+- **Jigsaw Puzzles:** assemble landscape, space, or underwater pictures with 9, 16, or 25 square-cut pieces. Drag pieces into place; the hardest level adds quarter-turn rotation. Use N to select the next piece, arrows to choose a square, Enter to place it, and Q/E to rotate. Optional hints mark the selected piece’s destination.
+- **Maze Explorer:** explore generated mazes with the arrow keys or WASD. Choose 7×5, 11×7, or 15×9 mazes. Harder mazes add a key and locked door. Hints reveal the next few steps; Start over preserves the maze, while New maze generates another.
+- **Letter Hunt:** collect stars by typing letters, letters plus numbers, or whole words. Uppercase and lowercase both work. Mistakes preserve progress; Backspace undoes a letter in a partial word. Optional QWERTY keyboard hints help build confidence without a clock.
+
 Use each game's **Game shelf** button or Escape to return to the hub. Instructions and difficulty choices are available inside the games.
 
 The first Ball & Bucket puzzle generator translates and mirrors a tested ramp layout, then varies the piece budget and bucket width by difficulty. This keeps random puzzles solvable; more varied multi-ramp puzzle families can be added later.
@@ -38,7 +42,9 @@ Install the standard (non-.NET) [Godot 4.5.2 release](https://godotengine.org/do
 godot --path .
 ```
 
-`GODOT_BIN=/path/to/godot ./game-hub` explicitly selects an engine and runs the source project, even when an exported build exists. The games need neither Python nor Node.js. Only development/exporting needs the Godot editor and export templates.
+`GODOT_BIN=/path/to/godot ./game-hub` explicitly selects an engine and runs the source project, even when an exported build exists. To open a game directly, append `-- --memory`, `-- --physics`, `-- --jigsaw`, `-- --maze`, or `-- --letter-hunt` to the launch command.
+
+The games need neither Python nor Node.js. Only development/exporting needs the Godot editor and export templates.
 
 ## Build standalone apps
 
@@ -85,6 +91,9 @@ Or run individual checks with the editor executable (the release executable inte
 ```sh
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_memory.gd
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_ball_bucket.gd
+.tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_jigsaw.gd
+.tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_maze.gd
+.tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_letter_hunt.gd
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_hub.gd
 ```
 
@@ -95,8 +104,11 @@ Use your installed Godot executable instead on other platforms. Headless checks 
 - `app/` — game shelf, shared styling, settings, and local progress.
 - `games/memory.gd` — Memory Match.
 - `games/ball_bucket.gd` — Ball & Bucket.
+- `games/jigsaw.gd` — Jigsaw Puzzles.
+- `games/maze.gd` — Maze Explorer.
+- `games/letter_hunt.gd` — Letter Hunt.
 - `tests/` — headless gameplay checks.
 - `scripts/` — export and optional terminal-command setup.
 - `GAME_IDEAS.md` — ideas and design goals.
 
-The Compatibility renderer targets ordinary desktop hardware. Exporting an app does not prove it has been tested on that operating system: verify a first launch and both games on each household machine before relying on that build.
+The Compatibility renderer targets ordinary desktop hardware. Exporting an app does not prove it has been tested on that operating system: verify a first launch and all five games on each household machine before relying on that build.

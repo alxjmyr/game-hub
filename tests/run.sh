@@ -9,7 +9,7 @@ trap 'rm -rf -- "$TEST_DATA"' EXIT
 export XDG_DATA_HOME="$TEST_DATA/data"
 export XDG_CONFIG_HOME="$TEST_DATA/config"
 export XDG_CACHE_HOME="$TEST_DATA/cache"
-for suite in memory ball_bucket hub; do
+for suite in memory ball_bucket jigsaw maze letter_hunt hub; do
   # Accelerate physics only. The hub exercises the real-time audio mixer,
   # which needs wall-clock time to release playback resources on shutdown.
   TIMING=()

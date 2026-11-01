@@ -15,6 +15,11 @@ x11.XOpenDisplay.argtypes = [ctypes.c_char_p]
 x11.XOpenDisplay.restype = ctypes.c_void_p
 x11.XFlush.argtypes = [ctypes.c_void_p]
 x11.XCloseDisplay.argtypes = [ctypes.c_void_p]
+x11.XStringToKeysym.argtypes = [ctypes.c_char_p]
+x11.XStringToKeysym.restype = ctypes.c_ulong
+x11.XKeysymToKeycode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+x11.XKeysymToKeycode.restype = ctypes.c_uint
+xtst.XTestFakeKeyEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
 xtst.XTestFakeMotionEvent.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_ulong]
 xtst.XTestFakeButtonEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
 display = x11.XOpenDisplay(os.environ.get('DISPLAY', ':99').encode())
@@ -36,6 +41,14 @@ def click(x, y):
     button(0)
     time.sleep(.2)
 
+def key(name):
+    code = x11.XKeysymToKeycode(display, x11.XStringToKeysym(name.encode()))
+    assert code, name
+    xtst.XTestFakeKeyEvent(display, code, 1, 0)
+    xtst.XTestFakeKeyEvent(display, code, 0, 0)
+    x11.XFlush(display)
+    time.sleep(.08)
+
 def shot(name):
     time.sleep(.2)
     subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-f', 'x11grab',
@@ -43,7 +56,7 @@ def shot(name):
                     '-frames:v', '1', '-y', str(ROOT / 'artifacts' / ('native-' + name + '.png'))], check=True)
 
 with open(ROOT / 'artifacts/native.log', 'w') as log:
-    app = subprocess.Popen([str(ROOT / 'build/linux/game-hub'), '--position', '0,0', '--resolution', '1200x800'], stdout=log, stderr=log)
+    app = subprocess.Popen([str(ROOT / 'build/linux/game-hub'), '--display-driver', 'x11', '--position', '0,0', '--resolution', '1200x800'], stdout=log, stderr=log)
     try:
         time.sleep(2)
         assert app.poll() is None, 'Packaged game exited at startup'
@@ -51,7 +64,7 @@ with open(ROOT / 'artifacts/native.log', 'w') as log:
         # A virtual display without a window manager may consume the first click
         # to focus the app. Focus on a neutral heading before choosing a game.
         click(400, 150)
-        click(300, 665)
+        click(220, 415)
         # Let hover tooltips become eligible before flipping/navigating.
         # Godot release templates used to emit popup-focus errors here.
         move(165, 270)
@@ -64,7 +77,7 @@ with open(ROOT / 'artifacts/native.log', 'w') as log:
         click(450, 270)
         time.sleep(1.5)
         click(115, 55)
-        click(850, 665)
+        click(600, 415)
         shot('physics-start')
         # Regression: release-build dropdown focus errors were missed by the
         # original smoke test. Exercise every replacement control repeatedly.
@@ -92,6 +105,46 @@ with open(ROOT / 'artifacts/native.log', 'w') as log:
         shot('physics-retry')
         click(115, 55)
         shot('returned-shelf')
+        click(980, 415)
+        shot('jigsaw-start')
+        # Select a piece, choose a target and exercise hint/rotation/restart.
+        key('n')
+        key('Right')
+        key('Return')
+        click(1090, 50)
+        key('e')
+        move(740, 220)
+        button(1)
+        move(300, 280)
+        button(0)
+        click(590, 677)
+        shot('jigsaw-hard')
+        key('Escape')
+        click(220, 680)
+        shot('maze-start')
+        for x in [220, 365, 80]:
+            click(x, 150)
+            for direction in ['Right', 'Down', 'Left', 'Up', 'd', 's']:
+                key(direction)
+            click(355, 750)
+        shot('maze-hint')
+        click(950, 50)
+        click(1100, 50)
+        key('Escape')
+        click(600, 680)
+        shot('letter-start')
+        for x in [80, 250, 425]:
+            click(x, 155)
+            # Every alphabet character ensures both accepted keys and forgiving
+            # mistakes occur regardless of the random prompt.
+            for letter in 'abcdefghijklmnopqrstuvwxyz0123456789':
+                key(letter)
+            key('BackSpace')
+        click(1080, 155)
+        shot('letter-words')
+        click(1100, 50)
+        key('Escape')
+        shot('all-games-returned-shelf')
         click(1115, 65)
         assert app.wait(timeout=5) == 0, 'Quit button failed'
     finally:
