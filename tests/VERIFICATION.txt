@@ -1,0 +1,59 @@
+Initial release verification
+============================
+Engine: Godot 4.5.2 standard, Compatibility renderer, physics 120 Hz.
+
+PASS ./tests/run.sh (isolated temporary save directories)
+- Memory: all 6/10/15-pair boards completed; mismatches, third clicks,
+  duplicate clicks, restart during concealment, keyboard activation,
+  persistent best scores and navigation.
+- Physics: 538 assertions, 72 actual simulated solved layouts across
+  three difficulties; failures/retries, arrangement preservation,
+  input locking, rotation/movement, bent-piece constraints, Space shortcut.
+- Hub: 18 checks covering mouse/keyboard launch, return navigation,
+  leaving during active games, local save reload, sound toggle and Escape.
+- No errors or leaked-object warnings in the headless suite.
+
+PASS exported Linux graphical app via tests/native_smoke.py
+- Real X11 mouse events: shelf -> Memory -> card flip -> shelf -> physics.
+- Dragged ramp, rotated it using buttons, dropped ball, observed failure,
+  retried with arrangement preserved, returned to shelf and clicked Quit.
+- Screenshots manually inspected in artifacts/native-*.png.
+- Native log had only a virtual-display VSync warning; no runtime errors.
+
+PASS visual review of both games' rendered victory states.
+PASS terminal launcher, GODOT_BIN override and optional PATH wrapper.
+PASS final Linux/Windows/macOS exports, macOS ZIP integrity, source hashes.
+- Linux: 70,214,240 bytes.
+- Windows x86-64: 96,519,536 bytes.
+- macOS Universal ZIP: 63,038,520 bytes.
+- Build resources exclude tests, tool downloads and screenshots.
+
+Scope: actual native runtime exercised on Linux. Windows/macOS exports
+are produced, but native runtime checks on those operating systems remain
+for the household machines. Signing/notarization notes are in README.md.
+
+Difficulty selector regression fix
+----------------------------------
+Reproduced Godot #89657 in the original exported Linux build by opening
+and changing the OptionButton menu (focus_entered/tree_exited errors).
+Replaced the popup with three mutually exclusive difficulty buttons.
+PASS full headless suite: physics now 583 assertions and 72 solved layouts.
+New assertions send actual mouse events through all difficulty buttons,
+including changes during active drops, and check reset state and selection.
+PASS native exported-app smoke: all three difficulties selected twice,
+correct 3/2/1 piece budgets visually verified, no engine errors in log.
+Also corrected the test runner to print failing logs and run audio checks
+in real time so playback resources can finish releasing before shutdown.
+
+Memory hover regression fix
+---------------------------
+Reproduced the same release-template focus errors by dwelling on hidden
+and revealed Memory Match cards. Replaced card tooltips with accessibility
+names; visible captions remain unchanged. Audited app/game scripts for
+remaining tooltip and popup construction paths (none remain).
+PASS headless suite, including hidden/revealed/concealed card labels and
+absence of native tooltip text. Native smoke now waits beyond the tooltip
+delay on cards before flipping and leaving the game.
+PASS rebuilt Linux release native smoke with hover delays, flips, shelf
+navigation, physics difficulty changes and normal Quit: no runtime errors.
+All three desktop exports rebuilt successfully with this fix.

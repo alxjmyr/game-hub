@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Launch the packaged game when available, otherwise the Godot project.
+set -euo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -n "${GODOT_BIN:-}" ]]; then
+  exec "$GODOT_BIN" --path "$ROOT" "$@"
+elif [[ -x "$ROOT/build/linux/game-hub" && "$(uname -s)" == Linux ]]; then
+  exec "$ROOT/build/linux/game-hub" "$@"
+elif [[ -d "$ROOT/build/macos/Game Hub.app" && "$(uname -s)" == Darwin ]]; then
+  exec "$ROOT/build/macos/Game Hub.app/Contents/MacOS/Game Hub" "$@"
+elif [[ -x "$ROOT/.tools/Godot_v4.5.2-stable_linux.x86_64" && "$(uname -s)" == Linux ]]; then
+  exec "$ROOT/.tools/Godot_v4.5.2-stable_linux.x86_64" --path "$ROOT" "$@"
+elif command -v godot >/dev/null 2>&1; then
+  exec godot --path "$ROOT" "$@"
+elif command -v godot4 >/dev/null 2>&1; then
+  exec godot4 --path "$ROOT" "$@"
+elif [[ -x /Applications/Godot.app/Contents/MacOS/Godot ]]; then
+  exec /Applications/Godot.app/Contents/MacOS/Godot --path "$ROOT" "$@"
+fi
+printf '%s\n' 'No game build or Godot found. Install Godot 4.5.2, or set GODOT_BIN to its executable.' >&2
+exit 1

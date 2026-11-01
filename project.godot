@@ -1,0 +1,25 @@
+; Game Hub — offline family arcade
+config_version=5
+
+[application]
+config/name="Game Hub"
+run/main_scene="res://app/main.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+
+[display]
+window/size/viewport_width=1200
+window/size/viewport_height=800
+window/size/window_width_override=1080
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/size/min_width=900
+window/size/min_height=600
+
+[rendering]
+textures/vram_compression/import_etc2_astc=true
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.96, 0.95, 0.91, 1)
+
+[physics]
+common/physics_ticks_per_second=120
