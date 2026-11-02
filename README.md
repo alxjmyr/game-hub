@@ -32,7 +32,7 @@ Optional: run `./scripts/install-command.sh` to install a small launcher in `~/.
 
 Use each game's **Game shelf** button or Escape to return to the hub. Instructions and difficulty choices are available inside the games.
 
-The first Ball & Bucket puzzle generator translates and mirrors a tested ramp layout, then varies the piece budget and bucket width by difficulty. This keeps random puzzles solvable; more varied multi-ramp puzzle families can be added later.
+Ball & Bucket keeps Explorer and Inventor on a simple ramp layout. Engineer varies ball and bucket positions on both axes, supplies one to four pieces including curved ramps and optional L-shaped blocks, and adds straight, L-shaped, or curved fixed barriers at varying angles. Unused shapes sit in a separate bottom dock with collisions disabled. Reference solutions use one or more ramps to pass the barrier; seeded physics tests cover 322 layouts across the three difficulties.
 
 ## Run from source
 

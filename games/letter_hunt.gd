@@ -6,7 +6,16 @@ signal completed(data: Dictionary)
 const INK = Color("24364b")
 const TEAL = Color("167d8d")
 const CREAM = Color("fffaf0")
-const WORDS = ["SUN", "MOON", "STAR", "KITE", "FROG", "BIRD", "TREE", "WAVE", "ROBOT", "CLOUD", "PLANET", "ROCKET", "GARDEN", "PUZZLE", "DRAGON", "CASTLE"]
+const WORDS = [
+	"SUN", "MOON", "STAR", "KITE", "FROG", "BIRD", "TREE", "WAVE",
+	"ROBOT", "CLOUD", "PLANET", "ROCKET", "GARDEN", "PUZZLE", "DRAGON", "CASTLE",
+	"CAT", "DOG", "FOX", "BEAR", "DUCK", "FISH", "CRAB", "SEAL",
+	"LION", "TIGER", "PANDA", "KOALA", "HORSE", "SHEEP", "MOUSE", "RABBIT",
+	"APPLE", "PEAR", "PEACH", "GRAPE", "MELON", "LEMON", "BREAD", "HONEY",
+	"RAIN", "SNOW", "WIND", "LEAF", "SEED", "FLOWER", "RIVER", "OCEAN",
+	"BALL", "BOOK", "BOAT", "TRAIN", "TRUCK", "PLANE", "HOUSE", "CHAIR",
+	"HAT", "SHOE", "SOCK", "COAT", "DRUM", "BELL", "SONG", "DANCE",
+]
 const ROUND_LENGTHS = [12, 16, 8]
 var difficulty := 0
 var prompts: Array[String] = []
