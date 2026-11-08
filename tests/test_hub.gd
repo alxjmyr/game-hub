@@ -68,7 +68,7 @@ func run() -> void:
 	await create_app()
 	check(is_instance_valid(app.shelf) and app.current_game == null, "launch opens shelf")
 	var play := find_buttons(app.shelf, "Play  →")
-	check(play.size() == 5, "shelf exposes all five game launch buttons")
+	check(play.size() == 6, "shelf exposes all six game launch buttons")
 	await click(app.sound_button)
 	check(not app.sound_enabled and app.sound_button.text == "Sound: off", "mouse toggles sound off")
 	await activate(play[0])
@@ -138,7 +138,7 @@ func run() -> void:
 	check(not is_instance_valid(physics_game) and is_instance_valid(app.shelf), "Escape returns safely during physics simulation")
 	# Launch every new game through the shelf, finish its actual mechanics, then
 	# reload the hub to verify the completion signal reaches persistent storage.
-	var extra_ids := ["jigsaw", "maze", "letter_hunt"]
+	var extra_ids := ["jigsaw", "maze", "letter_hunt", "caste_maze"]
 	for index in extra_ids.size():
 		play = find_buttons(app.shelf, "Play  →")
 		await activate(play[index + 2])
@@ -154,6 +154,12 @@ func run() -> void:
 				game.move_player(destination - game.player_cell)
 			for destination in game.find_path(game.player_cell, game.exit_cell, true).slice(1):
 				game.move_player(destination - game.player_cell)
+		elif id == "caste_maze":
+			game.start("Explorer")
+			while not game.won:
+				var target: Vector2i = game.exit_cell if game.has_key or game.area == "hall" else game.key_cell
+				for destination in game.path_to(target): game.move_player(destination - game.player_cell)
+				if game.next_button.visible and not game.won: game.next_level()
 		else:
 			game.change_difficulty(2)
 			while not game.won:

@@ -24,7 +24,7 @@ func _ready() -> void:
 			open_game("memory")
 		elif arg == "--physics":
 			open_game("ball_bucket")
-		elif arg in ["--jigsaw", "--maze", "--letter-hunt"]:
+		elif arg in ["--jigsaw", "--maze", "--letter-hunt", "--caste-maze"]:
 			open_game(arg.trim_prefix("--").replace("-", "_"))
 
 func _make_theme() -> Theme:
@@ -106,6 +106,7 @@ func show_shelf() -> void:
 	_game_card(row, "jigsaw", "03 / LOOK + CONNECT", "Jigsaw Puzzles", "Piece together a colorful scene.\nTurn a little chaos into a picture.", Color("dce3f7"))
 	_game_card(row, "maze", "04 / EXPLORE + PLAN", "Maze Explorer", "Find a path. Collect a key.\nWhere will the next turn lead?", Color("f4d7d3"))
 	_game_card(row, "letter_hunt", "05 / FIND + TYPE", "Letter Hunt", "Meet the keys on your keyboard.\nBuild your way up to words.", Color("e4ebc5"))
+	_game_card(row, "caste_maze", "06 / SNEAK + DISCOVER", "Castle Maze", "Choose your hero. Find hidden keys.\nEscape three castles and towers!", Color("e8d7ef"))
 	var footer := HBoxContainer.new()
 	column.add_child(footer)
 	var note := label("ALL PLAY. ALL LOCAL.     •     No timers. Take your time.", 16)
@@ -232,6 +233,12 @@ class ShelfArt extends Control:
 				var p := Vector2((i % 3) * 66 - 95, (i / 3) * 60 - 55)
 				draw_rect(Rect2(p, Vector2(60, 54)), [Color("167d8d"), Color("ed805c"), Color("e9b94e")][i % 3])
 				draw_circle(p + Vector2(60, 27), 10, Color("fffdf6"))
+		elif game_id == "caste_maze":
+			for i in 3:
+				var p := Vector2(i * 85 - 115, -45)
+				draw_rect(Rect2(p, Vector2(60, 100)), Color("88664f"))
+				for j in 3: draw_rect(Rect2(p + Vector2(j * 22, -12), Vector2(16, 18)), Color("88664f"))
+				draw_rect(Rect2(p + Vector2(22, 20), Vector2(16, 25)), Color("f5d68c"))
 		elif game_id == "maze":
 			draw_polyline(PackedVector2Array([Vector2(-110, 50), Vector2(-110, -50), Vector2(100, -50), Vector2(100, 50), Vector2(-30, 50), Vector2(-30, 0), Vector2(50, 0)]), Color("167d8d"), 12, true)
 			draw_circle(Vector2(-110, 50), 15, Color("ed805c"))

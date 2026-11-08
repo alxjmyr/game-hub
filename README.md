@@ -112,3 +112,9 @@ Use your installed Godot executable instead on other platforms. Headless checks 
 - `GAME_IDEAS.md` — ideas and design goals.
 
 The Compatibility renderer targets ordinary desktop hardware. Exporting an app does not prove it has been tested on that operating system: verify a first launch and all five games on each household machine before relying on that build.
+
+### Castle Maze
+
+A three-level adventure designed for the family game shelf. Choose a knight, princess, or explorer; search the Black Dungeon for a boxed key and hidden exit, descend into White Castle’s basement and secret room, then cross the Three Brown Towers’ rope bridges and return to the back tower’s trapdoor to reach the courtyard. Each level has a differently shaped key. Sleepy guards wake when approached, and holes send you back to your last safe tile without losing your key. There are no lives or time limits.
+
+Use arrow keys, WASD, or the on-screen arrows. Walk onto boxes and doors to search or unlock them; “A little hint” marks the next few safe steps. Launch directly with `./game-hub -- --caste-maze`.
