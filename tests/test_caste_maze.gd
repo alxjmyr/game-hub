@@ -18,6 +18,25 @@ func run() -> void:
 	game.completed.connect(func(_data): wins += 1)
 	await process_frame
 	check(game.hero == "" and game.chooser.visible, "starts with hero choice")
+	seed(20261121)
+	var previous := {}
+	for round_index in 20:
+		game.start("Knight")
+		for key_area in ["dungeon", "basement", "towers"]:
+			game.level = ["dungeon", "basement", "towers"].find(key_area)
+			if game.area != key_area: game.load_area(key_area)
+			var key: Vector2i = game.key_cell
+			check(not previous.has(key_area) or key != previous[key_area], "new key spot each round in " + key_area)
+			check(game.tiles.has(key) and not game.danger(key), "key on safe floor in " + key_area)
+			if key_area == "basement":
+				check(game.tiles[key] == "secret", "second key stays in secret room")
+			if key_area == "towers":
+				check(key.x >= 17, "third key stays across both bridges")
+			walk(key)
+			check(game.has_key and game.key_cell == key, "key stays put during play and can be collected")
+			walk(game.exit_cell)
+			check(game.next_button.visible or game.won, "random key permits escape")
+			previous[key_area] = key
 	for character in game.HEROES:
 		game.start(character)
 		check(game.hero == character, "select " + character)
@@ -65,7 +84,7 @@ func run() -> void:
 		var count := wins
 		game.move_player(Vector2i.RIGHT)
 		check(wins == count, "win is emitted only once")
-	check(wins == 3, "all three heroes can complete adventure")
+	check(wins == 23, "randomized rounds and all three heroes can complete adventure")
 	game.queue_free()
 	await process_frame
 	quit(1 if failures else 0)

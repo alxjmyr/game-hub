@@ -14,6 +14,7 @@ var tiles := {}
 var player_cell := Vector2i.ZERO
 var safe_cell := Vector2i.ZERO
 var key_cell := Vector2i.ZERO
+var previous_key_cells := {}
 var exit_cell := Vector2i.ZERO
 var guards: Array[Vector2i] = []
 var holes: Array[Vector2i] = []
@@ -149,7 +150,6 @@ func load_area(new_area: String) -> void:
 		carve(14, 2, 2, 4)
 		carve(19, 2, 2, 5)
 		player_cell = Vector2i(1, 1)
-		key_cell = Vector2i(1, 9)
 		exit_cell = Vector2i(20, 6)
 		holes.assign([Vector2i(7, 5), Vector2i(17, 8)])
 		guards.assign([Vector2i(5, 1), Vector2i(14, 4)])
@@ -171,7 +171,6 @@ func load_area(new_area: String) -> void:
 		carve(11, 2, 3, 2, "secret")
 		carve(11, 1, 3, 1, "secret")
 		player_cell = Vector2i(2, 7)
-		key_cell = Vector2i(12, 1)
 		exit_cell = Vector2i(19, 3)
 		carve(18, 2, 3, 3, "room")
 		for cell in [Vector2i(18, 2), Vector2i(19, 2), Vector2i(20, 2), Vector2i(18, 3), Vector2i(20, 3), Vector2i(20, 4)]: tiles.erase(cell)
@@ -185,7 +184,6 @@ func load_area(new_area: String) -> void:
 		carve(6, 4, 3, 2, "bridge")
 		carve(14, 6, 3, 2, "bridge")
 		player_cell = Vector2i(3, 7)
-		key_cell = Vector2i(20, 3)
 		exit_cell = Vector2i(2, 3)
 		guards.assign([Vector2i(11, 3), Vector2i(19, 7)])
 		holes.assign([Vector2i(4, 5), Vector2i(10, 7), Vector2i(18, 4)])
@@ -200,9 +198,24 @@ func load_area(new_area: String) -> void:
 		next_button.text = "Play again"
 		next_button.show()
 		completed.emit({"game": "caste_maze", "hero": hero, "gentle_hops": bumps})
+	place_key()
 	safe_cell = player_cell
 	visited[player_cell] = true
 	refresh()
+
+func place_key() -> void:
+	# Keep each key in its adventure area, with a safe route to its box.
+	var candidates: Array[Vector2i] = []
+	for cell: Vector2i in tiles:
+		var in_key_area: bool = (area == "dungeon" and cell.x <= 2 and cell.y >= 6) \
+			or (area == "basement" and tiles[cell] == "secret") \
+			or (area == "towers" and cell.x >= 17)
+		if not in_key_area or cell == player_cell or cell == exit_cell or danger(cell): continue
+		if previous_key_cells.get(area) == cell or path_to(cell).is_empty(): continue
+		candidates.append(cell)
+	if not candidates.is_empty():
+		key_cell = candidates.pick_random()
+		previous_key_cells[area] = key_cell
 
 func danger(cell: Vector2i) -> bool:
 	if cell in holes: return true
