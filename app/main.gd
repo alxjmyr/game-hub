@@ -24,7 +24,7 @@ func _ready() -> void:
 			open_game("memory")
 		elif arg == "--physics":
 			open_game("ball_bucket")
-		elif arg in ["--jigsaw", "--maze", "--letter-hunt", "--caste-maze"]:
+		elif arg in ["--jigsaw", "--maze", "--letter-hunt", "--caste-maze", "--minesweeper", "--monster-blast"]:
 			open_game(arg.trim_prefix("--").replace("-", "_"))
 
 func _make_theme() -> Theme:
@@ -107,6 +107,8 @@ func show_shelf() -> void:
 	_game_card(row, "maze", "04 / EXPLORE + PLAN", "Maze Explorer", "Find a path. Collect a key.\nWhere will the next turn lead?", Color("f4d7d3"))
 	_game_card(row, "letter_hunt", "05 / FIND + TYPE", "Letter Hunt", "Meet the keys on your keyboard.\nBuild your way up to words.", Color("e4ebc5"))
 	_game_card(row, "caste_maze", "06 / SNEAK + DISCOVER", "Castle Maze", "Choose your hero. Find hidden keys.\nEscape three castles and towers!", Color("e8d7ef"))
+	_game_card(row, "minesweeper", "07 / COUNT + DEDUCE", "Minesweeper", "Read the clues. Flag the mines.", Color("cbe3ea"))
+	_game_card(row, "monster_blast", "08 / RUN + SURVIVE", "Monster Blast", "Escape a monster-held castle.\nThree chapters. Two bosses.", Color("d4c3ae"))
 	var footer := HBoxContainer.new()
 	column.add_child(footer)
 	var note := label("ALL PLAY. ALL LOCAL.     •     No timers. Take your time.", 16)
@@ -239,6 +241,17 @@ class ShelfArt extends Control:
 				draw_rect(Rect2(p, Vector2(60, 100)), Color("88664f"))
 				for j in 3: draw_rect(Rect2(p + Vector2(j * 22, -12), Vector2(16, 18)), Color("88664f"))
 				draw_rect(Rect2(p + Vector2(22, 20), Vector2(16, 25)), Color("f5d68c"))
+		elif game_id == "monster_blast":
+			draw_rect(Rect2(-110, -45, 220, 100), Color("303b42"))
+			for x in [-70, 10]:
+				draw_rect(Rect2(x, -15, 45, 40), Color("c9c19d"))
+				draw_rect(Rect2(x + 6, -5, 10, 10), Color("ac4a3b"))
+				draw_rect(Rect2(x + 29, -5, 10, 10), Color("ac4a3b"))
+		elif game_id == "minesweeper":
+			for i in 3:
+				var p := Vector2(i * 68 - 100, -32)
+				draw_style_box(_card(), Rect2(p, Vector2(62, 64)))
+				draw_string(ThemeDB.fallback_font, p + Vector2(16, 46), ["1", "⚑", "2"][i], HORIZONTAL_ALIGNMENT_LEFT, -1, 40, TEAL)
 		elif game_id == "maze":
 			draw_polyline(PackedVector2Array([Vector2(-110, 50), Vector2(-110, -50), Vector2(100, -50), Vector2(100, 50), Vector2(-30, 50), Vector2(-30, 0), Vector2(50, 0)]), Color("167d8d"), 12, true)
 			draw_circle(Vector2(-110, 50), 15, Color("ed805c"))

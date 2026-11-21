@@ -134,3 +134,87 @@ Rendered screenshots manually inspected: maze-carrying-key.png shows closed
 door and Carrying key status; maze-door-opened.png shows Door open and the
 unlock message. No graphical runtime errors.
 All three exports rebuilt successfully after the inventory correction.
+
+Monster Blast dungeon slice — 2026-11-20
+---------------------------------------
+PASS ./tests/run.sh (exit 0) on final source, including all existing games,
+Minesweeper, Monster Blast, hub integration, and the complete FPS traversal.
+No script errors, failures, or leaked-object warnings in the final run.
+
+Monster Blast checks cover pistol/ammo pickup, health preservation/refill,
+physics-ray hits and wall occlusion, cooldown, automatic/explicit melee,
+monster death/collision removal, skeleton pursuit, caster telegraph and
+projectile spawning, dodging, projectile damage and wall absorption,
+secret-wall interaction/navigation, keyed exit, single completion signal,
+pause/resume, focus-loss pause, map input, death/retry reset, WASD movement,
+wall collision, and releasing the pointer on exit.
+
+The traversal uses normal movement collision, AI, weapon cooldown, damage,
+and pickups without granting health/ammunition or teleporting along its
+route. It clears all 13 monsters, collects the chapel key, opens the secret,
+visits the stash, and unlocks the stair gate. An automated aim driver is
+used, so this proves completion/reachability rather than human difficulty.
+Hub checks verify the eighth shelf entry, launching the briefing, entering
+play, Escape pausing rather than exiting, completion persistence, safe
+shelf return, and Escape from the briefing after the game node is removed.
+
+PASS scripts/export.sh linux; final packaged executable tested through
+real X11 keyboard/mouse events with tests/native_monster_blast.py (exit 0).
+Inspected native screenshots of pistol pickup, guard defeat (ammo spent,
+kill recorded), mouse look, map, pause, restart, and shelf return. Runtime
+log contains only virtual-display input-method/VSync warnings, no errors.
+Rendered source screenshots also reviewed at 1200x800 and 900x600, including
+briefing, cell, ossuary, chapel, map, pause, death, and escape screens.
+
+Build: build/linux/game-hub. Launch: ./game-hub -- --monster-blast.
+Only Linux was rebuilt/tested for this addition. Castle and grounds remain
+future chapters. Human playtesting is still needed to tune difficulty,
+mouse sensitivity, atmosphere, and eventual three-level playtime.
+
+Monster Blast full campaign and difficulty — 2026-11-20
+-------------------------------------------------------
+Implemented two additional hand-authored chapters (Hollow Crown castle and
+Last Drawbridge grounds), completing a three-chapter escape with an ending.
+Easy retains original movement/attack timing; Normal uses 1.30x movement /
+1.35x attack timing, Hard 1.65x / 1.80x. Enemy health and damage are unchanged
+by difficulty. Native start-screen buttons replace popup selectors.
+
+PASS ./tests/run.sh (exit 0): all existing games, original dungeon checks,
+campaign mechanics, hub persistence, and continuous full-campaign traversal.
+PASS final focused campaign checks following the boss collision refinement:
+- Difficulty moves actual monsters at the specified rates and accelerates
+  actual cooldowns; selection locks during play and survives transitions.
+- All chapter pickups, secret supplies, winches and exit approaches reachable.
+- Warden locks charge direction, can be dodged, has a recovery window,
+  resists hit-stun, stops with a swept full collision shape at walls, and
+  deals contact damage only once per charge.
+- Regent fires three-shot fans, becomes enraged below half health, summons
+  four gargoyles once, fires five-shot fans, and awards the gate seal.
+- Castle requires silver seal plus Warden defeat; final gate requires Regent
+  defeat plus both winches. Neither intermediate exit records a hub win.
+- Castle and grounds death/retry restore exact entry inventory and health;
+  bosses, objectives, secrets, winches and chapter pickups reset, while
+  earlier chapter results and chosen difficulty remain intact.
+- Weapon unlocks, low-ammo pistol fallback, final aggregate result payload,
+  single victory emission, and replay returning to difficulty selection.
+
+PASS continuous final-source campaign traversals on Easy, Normal and Hard:
+all three chapters, 50 monsters including both bosses and summoned gargoyles,
+three secrets, both winches, and the final gate. Drivers supply movement/aim
+only: no teleporting, direct damage, invulnerability or granted supplies.
+The driver navigates known routes with accurate aim; these runs establish
+mechanical completion, not a prediction of human difficulty or playtime.
+Fixed-FPS simulation is accelerated; audio cleanup drains in wall time.
+
+PASS rebuilt Linux release via tests/native_monster_blast.py:
+actual mouse clicks select Normal, Hard and Easy with matching descriptions;
+keyboard/mouse movement, pistol pickup, firing, look, map, pause, retry,
+shelf return and Quit verified. Inspected generated native screenshots.
+Runtime log has only virtual-display input-method / VSync warnings.
+PASS rendered visual inspection of both new chapters, weapons, bosses,
+winches, chapter transitions and final ending; menus fit 1200x800 and 900x600.
+PASS git diff --check.
+
+Build: build/linux/game-hub. Same launch: ./game-hub -- --monster-blast.
+README documents campaign, controls, difficulty, weapons and checkpoints.
+Linux rebuilt and exercised; Windows/macOS were not rebuilt in this change.

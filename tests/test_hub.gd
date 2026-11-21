@@ -68,7 +68,7 @@ func run() -> void:
 	await create_app()
 	check(is_instance_valid(app.shelf) and app.current_game == null, "launch opens shelf")
 	var play := find_buttons(app.shelf, "Play  →")
-	check(play.size() == 6, "shelf exposes all six game launch buttons")
+	check(play.size() == 8, "shelf exposes all eight game launch buttons")
 	await click(app.sound_button)
 	check(not app.sound_enabled and app.sound_button.text == "Sound: off", "mouse toggles sound off")
 	await activate(play[0])
@@ -138,7 +138,7 @@ func run() -> void:
 	check(not is_instance_valid(physics_game) and is_instance_valid(app.shelf), "Escape returns safely during physics simulation")
 	# Launch every new game through the shelf, finish its actual mechanics, then
 	# reload the hub to verify the completion signal reaches persistent storage.
-	var extra_ids := ["jigsaw", "maze", "letter_hunt", "caste_maze"]
+	var extra_ids := ["jigsaw", "maze", "letter_hunt", "caste_maze", "minesweeper"]
 	for index in extra_ids.size():
 		play = find_buttons(app.shelf, "Play  →")
 		await activate(play[index + 2])
@@ -148,6 +148,11 @@ func run() -> void:
 		if id == "jigsaw":
 			for piece in game.pieces.size():
 				game.attempt_drop(piece, game.target_position(piece))
+		elif id == "minesweeper":
+			await click(game.cells[0])
+			for i in game.cells.size():
+				if i not in game.mines and i not in game.opened:
+					await click(game.cells[i])
 		elif id == "maze":
 			game.change_difficulty(1)
 			for destination in game.find_path(game.player_cell, game.key_cell, false).slice(1):
@@ -185,9 +190,62 @@ func run() -> void:
 		await process_frame
 		await process_frame
 		check(app.current_game == null and app.progress.get_value(id, "wins", 0) == 1, "Escape safely exits unfinished " + id)
+	# Monster Blast handles Escape as pause and completes at its keyed stair gate.
+	play = find_buttons(app.shelf, "Play  →")
+	await activate(play[7])
+	var monster: Control = app.current_game
+	check(app.last_game == "monster_blast" and monster.phase == "intro", "shelf launches Monster Blast briefing")
+	await activate(monster.primary_button)
+	monster.set_physics_process(false)
+	check(monster.phase == "playing", "briefing button begins dungeon")
+	escape = InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	Input.parse_input_event(escape)
+	await process_frame
+	await physics_frame
+	check(is_instance_valid(app.current_game) and monster.phase == "paused", "FPS consumes Escape for pause instead of exiting to shelf")
+	await activate(monster.primary_button)
+	monster.player_body.position = monster.at(Vector2i(21, 14))
+	monster._collect_pickups()
+	monster.player_body.position = monster.at(Vector2i(6, 17))
+	monster.player_body.rotation.y = PI
+	monster.interact()
+	check(not monster.won and app.progress.get_value("monster_blast", "wins", 0) == 0, "dungeon clear does not prematurely award campaign win")
+	for chapter in [1, 2]:
+		monster.next_level()
+		monster.set_physics_process(false)
+		await physics_frame
+		if chapter == 1:
+			monster.player_body.position = monster.at(Vector2i(14, 3))
+			monster._collect_pickups()
+		for i in monster.enemies.size():
+			if monster.enemies[i].boss: monster.damage_enemy(i, monster.enemies[i].hp)
+		for lever in monster.switches:
+			monster.player_body.position = monster.at(lever.cell + Vector2i.DOWN)
+			monster.player_body.rotation.y = 0
+			monster.interact()
+		monster.player_body.position = monster.at(monster.EXIT + Vector2i.DOWN)
+		monster.player_body.rotation.y = 0
+		monster.interact()
+	check(monster.won and app.progress.get_value("monster_blast", "wins", 0) == 1, "all three chapter escape recorded by hub")
+	await process_frame
+	await process_frame
+	await click(monster.back_button)
+	check(app.current_game == null and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "FPS shelf button releases mouse and frees world")
+	app.open_game("monster_blast")
+	await process_frame
+	escape = InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	Input.parse_input_event(escape)
+	await process_frame
+	await physics_frame
+	check(app.current_game == null and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, "Escape safely exits FPS briefing without accessing freed viewport")
 	app.queue_free()
 	await process_frame
 	await create_app()
+	check(app.progress.get_value("monster_blast", "wins", 0) == 1, "dungeon result survives save reload")
 	for id in extra_ids:
 		check(app.progress.get_value(id, "wins", 0) == 1, "completion survives disk reload for " + id)
 	app.queue_free()

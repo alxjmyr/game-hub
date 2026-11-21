@@ -1,6 +1,6 @@
 # Game Hub
 
-An offline family arcade for ages 8–12, built with **Godot 4.5.2 and GDScript**. Open the shelf, choose from five games, and play. No accounts, ads, online chat, or network connection are needed. All artwork is drawn locally by the game.
+An offline arcade, built with **Godot 4.5.2 and GDScript**. Open the shelf, choose from eight games, and play. No accounts, ads, online chat, or network connection are needed. All artwork is drawn locally by the game.
 
 ## Play on this Ubuntu machine
 
@@ -29,8 +29,9 @@ Optional: run `./scripts/install-command.sh` to install a small launcher in `~/.
 - **Jigsaw Puzzles:** assemble landscape, space, or underwater pictures with 9, 16, or 25 square-cut pieces. Drag pieces into place; the hardest level adds quarter-turn rotation. Use N to select the next piece, arrows to choose a square, Enter to place it, and Q/E to rotate. The two harder levels show a small picture-box reference beside the board. Optional hints mark the selected piece’s destination.
 - **Maze Explorer:** explore generated mazes with the arrow keys or WASD. Choose 7×5, 11×7, or 15×9 mazes. Harder mazes place a key down a side branch, away from the locked door, so you must retrieve it before heading out. Carry the key to the door; stepping into the door uses the key and opens it permanently. Hints reveal the next few steps; Start over preserves the maze, while New maze generates another.
 - **Letter Hunt:** collect stars by typing letters, letters plus numbers, or whole words. Uppercase and lowercase both work. Mistakes preserve progress; Backspace undoes a letter in a partial word. Optional QWERTY keyboard hints help build confidence without a clock.
+- **Minesweeper** has 10 mines on a 9×9 board. Your first click opens a safe patch. Each number counts neighboring mines, including diagonals. Open all 71 safe squares to win. Right-click or press F to toggle a flag, or enable Flag mode for single-button play. Opening a number again reveals its remaining neighbors if the adjacent flag count matches. A misplaced flag can make this hit a mine.
 
-Use each game's **Game shelf** button or Escape to return to the hub. Instructions and difficulty choices are available inside the games.
+Use each game's **Game shelf** button or Escape to return to the hub. In Monster Blast, Escape pauses the game; choose **Game shelf** from its menu to leave. Instructions and difficulty choices are available inside the games.
 
 Ball & Bucket keeps Explorer and Inventor on a simple ramp layout. Engineer varies ball and bucket positions on both axes, supplies one to four pieces including curved ramps and optional L-shaped blocks, and adds straight, L-shaped, or curved fixed barriers at varying angles. Unused shapes sit in a separate bottom dock with collisions disabled. Reference solutions use one or more ramps to pass the barrier; seeded physics tests cover 322 layouts across the three difficulties.
 
@@ -42,7 +43,7 @@ Install the standard (non-.NET) [Godot 4.5.2 release](https://godotengine.org/do
 godot --path .
 ```
 
-`GODOT_BIN=/path/to/godot ./game-hub` explicitly selects an engine and runs the source project, even when an exported build exists. To open a game directly, append `-- --memory`, `-- --physics`, `-- --jigsaw`, `-- --maze`, or `-- --letter-hunt` to the launch command.
+`GODOT_BIN=/path/to/godot ./game-hub` explicitly selects an engine and runs the source project, even when an exported build exists. To open a game directly, append `-- --memory`, `-- --physics`, `-- --jigsaw`, `-- --maze`, `-- --letter-hunt`, `-- --caste-maze`, `-- --minesweeper`, or `-- --monster-blast` to the launch command.
 
 The games need neither Python nor Node.js. Only development/exporting needs the Godot editor and export templates.
 
@@ -94,6 +95,7 @@ Or run individual checks with the editor executable (the release executable inte
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_jigsaw.gd
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_maze.gd
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_letter_hunt.gd
+.tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_minesweeper.gd
 .tools/Godot_v4.5.2-stable_linux.x86_64 --headless --path . --script tests/test_hub.gd
 ```
 
@@ -107,14 +109,49 @@ Use your installed Godot executable instead on other platforms. Headless checks 
 - `games/jigsaw.gd` — Jigsaw Puzzles.
 - `games/maze.gd` — Maze Explorer.
 - `games/letter_hunt.gd` — Letter Hunt.
-- `tests/` — headless gameplay checks.
+- `games/minesweeper.gd` — Minesweeper.
+- `tests/` — gameplay and integration checks.
 - `scripts/` — export and optional terminal-command setup.
 - `GAME_IDEAS.md` — ideas and design goals.
 
-The Compatibility renderer targets ordinary desktop hardware. Exporting an app does not prove it has been tested on that operating system: verify a first launch and all five games on each household machine before relying on that build.
+The Compatibility renderer targets ordinary desktop hardware. Exporting an app does not prove it has been tested on that operating system: verify a first launch and all eight games on each household machine before relying on that build.
 
 ### Castle Maze
 
 A three-level adventure designed for the family game shelf. Choose a knight, princess, or explorer; search the Black Dungeon for a boxed key and hidden exit, descend into White Castle’s basement and secret room, then cross the Three Brown Towers’ rope bridges and return to the back tower’s trapdoor to reach the courtyard. Each level has a differently shaped key. Sleepy guards wake when approached, and holes send you back to your last safe tile without losing your key. There are no lives or time limits.
 
 Use arrow keys, WASD, or the on-screen arrows. Walk onto boxes and doors to search or unlock them; “A little hint” marks the next few safe steps. Launch directly with `./game-hub -- --caste-maze`.
+
+### Monster Blast — escape the castle
+
+A complete three-chapter desktop FPS campaign with original pixel art, 3D corridors, torchlight, synthesized effects, and a moonlit finale. Spooky monster combat includes pixel blood and is more intense than the other shelf games.
+
+Choose **Easy**, **Normal**, or **Hard** before entering the dungeon. Easy preserves the original dungeon’s movement and attack timing. Normal makes monsters move 30% faster and attack 35% faster; Hard makes them move 65% faster and attack 80% faster. Difficulty does not inflate enemy health, change player speed, or increase damage. It remains fixed through the run and retries; New escape returns to the selector.
+
+1. **The Dungeon:** leave your cell, take the sleeping guard’s pistol, find the brass key in the Warden’s Chapel, and unlock the castle stairs. Thirteen monsters and a cracked-wall supply stash retain the original opening.
+2. **The Hollow Crown:** explore the armory, forbidden library, banquet gallery, and throne hall. Find the silver seal and defeat the **Iron Warden** to open the portcullis. His orange windup warns of a charge aimed at your previous position; sidestep, then attack during his blue recovery. Below half health he prepares attacks faster.
+3. **The Last Drawbridge:** cross the moonlit graveyard and watchtowers. Raise both winches, defeat the **Grave Regent**, and use his gate seal to escape. His spell fans widen and he summons four gargoyles at half health. The lowered drawbridge and final gate lead to the campaign ending.
+
+Every chapter has a secret supply room, ammunition, health, distinct landmarks, and an exploration map. The later chapters introduce fast gargoyles, a blunderbuss in the armory, and a rune caster in the north watchtower. Each heavy weapon spends three rounds; the pistol spends one. If fewer than three rounds remain, firing a heavy weapon switches to the pistol. Empty ammunition automatically falls back to melee.
+
+| Control | Action |
+| --- | --- |
+| WASD or arrow keys | Move / strafe (Up/Down: forward/back; Left/Right: strafe) |
+| Mouse | Look / aim |
+| Left mouse (hold supported) | Shoot; melee automatically when empty |
+| F or right mouse | Melee, without spending ammo |
+| 1 / 2 / 3 | Pistol / blunderbuss / rune caster, once found |
+| E | Use exit gate, raise winch, or search cracked wall |
+| Tab | Toggle explored map (game continues) |
+| Escape | Pause / resume and release mouse |
+| [ / ] | Lower / raise mouse sensitivity |
+
+At each chapter transition, health, ammunition, and weapons carry forward. Death or Restart level restores exactly that chapter’s entry equipment, while resetting its enemies, pickups, boss, key, winches, and secret. Earlier chapters remain complete. Checkpoints last for the current session; leaving for the shelf starts a new campaign next time. Only escaping the final gate records a hub win, with difficulty, all three chapter results, elapsed play time, kills, accuracy, and secrets. The window automatically pauses on focus loss; the shelf’s Sound toggle controls all effects and ambience.
+
+Run the updated Linux build with `./game-hub -- --monster-blast`, or force source with:
+
+```sh
+GODOT_BIN="$PWD/.tools/Godot_v4.5.2-stable_linux.x86_64" ./game-hub -- --monster-blast
+```
+
+Implementation: `games/monster_blast.gd`, `games/monster_blast/art.gd`, and the hand-authored chapter layouts in `games/monster_blast/levels.gd`. `tests/run.sh` includes the original dungeon checks, campaign mechanics and hub persistence, and a continuous three-chapter traversal using normal combat and earned supplies. `tests/capture_monster_campaign.gd` renders the new rooms, bosses, and menus, including the 900×600 layout. Human playtime varies with exploration, aim, and difficulty; the design target remains roughly 15–25 minutes for a first escape.

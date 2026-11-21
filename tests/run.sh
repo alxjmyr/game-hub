@@ -9,7 +9,7 @@ trap 'rm -rf -- "$TEST_DATA"' EXIT
 export XDG_DATA_HOME="$TEST_DATA/data"
 export XDG_CONFIG_HOME="$TEST_DATA/config"
 export XDG_CACHE_HOME="$TEST_DATA/cache"
-for suite in memory ball_bucket jigsaw maze letter_hunt caste_maze hub; do
+for suite in memory ball_bucket jigsaw maze letter_hunt caste_maze minesweeper monster_blast monster_campaign hub; do
   # Accelerate physics only. The hub exercises the real-time audio mixer,
   # which needs wall-clock time to release playback resources on shutdown.
   TIMING=()
@@ -21,3 +21,11 @@ for suite in memory ball_bucket jigsaw maze letter_hunt caste_maze hub; do
   cat "$TEST_DATA/$suite.log"
   if rg -q 'SCRIPT ERROR|ERROR:|FAIL|leaked' "$TEST_DATA/$suite.log"; then exit 1; fi
 done
+
+# Accelerate the full three-chapter traversal; the driver drains audio in wall time.
+if ! "$ENGINE" --headless --path "$ROOT" --fixed-fps 120 --script tests/playthrough_monster_campaign.gd > "$TEST_DATA/monster-playthrough.log" 2>&1; then
+  cat "$TEST_DATA/monster-playthrough.log"
+  exit 1
+fi
+cat "$TEST_DATA/monster-playthrough.log"
+if rg -q 'SCRIPT ERROR|ERROR:|FAIL|leaked' "$TEST_DATA/monster-playthrough.log"; then exit 1; fi
